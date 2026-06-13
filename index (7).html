@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CarbonLens — Track & Reduce Your Carbon Footprint</title>
+  <meta name="description" content="CarbonLens helps you understand, track, and reduce your carbon footprint through simple actions and AI-powered personalized insights." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <style>
+    :root {
+      --green: #1D9E75;
+      --green-light: #E1F5EE;
+      --green-dark: #0F6E56;
+      --green-mid: #5DCAA5;
+      --red: #993C1D;
+      --blue: #378ADD;buil
+      --purple: #7F77DD;
+      --amber: #BA7517;
+      --bg: #F5F7F5;
+      --card: #FFFFFF;
+      --border: #E4EAE4;
+      --text: #1A1F1A;
+      --text2: #5C6A5C;
+      --text3: #8A988A;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* NAV */
+    nav {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 58px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 34px; height: 34px;
+      background: var(--green);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .nav-tabs {
+      display: flex;
+      gap: 2px;
+    }
+    .tab {
+      padding: 6px 14px;
+      border: none;
+      background: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text2);
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      transition: all 0.15s;
+    }
+    .tab.active { background: var(--green-light); color: var(--green-dark); }
+    .tab:hover:not(.active) { background: var(--bg); }
+    .score-badge {
+      background: var(--green-light);
+      color: var(--green-dark);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-family: 'DM Mono', monospace;
+    }
+
+    /* MAIN */
+    main { max-width: 740px; margin: 0 auto; padding: 1.5rem; }
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* CARDS */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .card-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 1rem;
+    }
+
+    /* HERO */
+    .hero {
+      background: linear-gradient(135deg, #0F6E56 0%, #1D9E75 100%);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      color: white;
+    }
+    .hero h2 { font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+    .hero p { font-size: 13px; opacity: 0.85; line-height: 1.6; }
+
+    /* METRICS */
+    .metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1rem; }
+    .metric {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+    .metric-label { font-size: 11px; color: var(--text3); margin-bottom: 6px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+    .metric-value { font-size: 24px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; }
+    .metric-unit { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+    /* BARS */
+    .result-bar { margin-bottom: 12px; }
+    .result-bar-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--text2); margin-bottom: 5px; font-weight: 500; }
+    .bar-track { height: 7px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 4px; transition: width 0.7s cubic-bezier(.4,0,.2,1); }
+
+    /* CALCULATOR */
+    .input-row { margin-bottom: 1.1rem; }
+    .input-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .input-sub { font-size: 11px; color: var(--text3); font-weight: 400; }
+    .slider-row { display: flex; align-items: center; gap: 12px; }
+    .slider-row input[type=range] {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--border);
+      outline: none;
+    }
+    .slider-row input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: var(--green);
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(29,158,117,0.3);
+    }
+    .slider-val {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--green-dark);
+      min-width: 60px;
+      text-align: right;
+      font-family: 'DM Mono', monospace;
+    }
+    select {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: var(--text);
+      background: var(--card);
+      outline: none;
+      cursor: pointer;
+    }
+    select:focus { border-color: var(--green); }
+
+    .calc-btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--green);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      letter-spacing: 0.3px;
+    }
+    .calc-btn:hover { background: var(--green-dark); transform: translateY(-1px); }
+    .calc-btn:active { transform: translateY(0); }
+
+    /* INSIGHTS */
+    .insight-box {
+      background: var(--green-light);
+      border: 1px solid var(--green-mid);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      margin-bottom: 10px;
+    }
+    .insight-box.loading { background: var(--bg); border-color: var(--border); }
+    .insight-header {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--green-dark);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .insight-text { font-size: 13px; color: #085041; line-height: 1.65; }
+    .insight-text.muted { color: var(--text2); }
+
+    .ai-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 16px;
+      border: 1px solid var(--green-mid);
+      background: transparent;
+      color: var(--green-dark);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      margin-top: 10px;
+      transition: all 0.15s;
+    }
+    .ai-btn:hover { background: var(--green-light); }
+    .ai-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .spinner {
+      width: 14px; height: 14px;
+      border: 2px solid var(--green-mid);
+      border-top-color: var(--green-dark);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* PLEDGES */
+    .pledge-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .pledge-item:last-child { border-bottom: none; }
+    .pledge-check {
+      width: 22px; height: 22px;
+      border-radius: 5px;
+      border: 2px solid var(--border);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+    .pledge-check.checked { background: var(--green); border-color: var(--green); }
+    .pledge-text { font-size: 13px; color: var(--text); flex: 1; line-height: 1.4; }
+    .pledge-impact {
+      font-size: 11px;
+      color: var(--green-dark);
+      background: var(--green-light);
+      padding: 3px 9px;
+      border-radius: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      font-family: 'DM Mono', monospace;
+    }
+
+    /* TIPS GRID */
+    .tips-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .tip-card {
+      background: var(--bg);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      border: 1px solid var(--border);
+    }
+    .tip-icon { font-size: 20px; margin-bottom: 6px; }
+    .tip-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .tip-desc { font-size: 11px; color: var(--text2); line-height: 1.55; }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      font-size: 12px;
+      color: var(--text3);
+    }
+    footer a { color: var(--green); text-decoration: none; }
+
+    /* RESPONSIVE */
+    @media (max-width: 600px) {
+      .nav-tabs { display: none; }
+      .mobile-tabs {
+        display: flex;
+        overflow-x: auto;
+        gap: 4px;
+        padding: 10px 1rem;
+        background: var(--card);
+        border-bottom: 1px solid var(--border);
+      }
+      .mobile-tab {
+        padding: 6px 14px;
+        border: 1px solid var(--border);
+        background: none;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text2);
+        cursor: pointer;
+        border-radius: 20px;
+        white-space: nowrap;
+        transition: all 0.15s;
+      }
+      .mobile-tab.active { background: var(--green-light); border-color: var(--green-mid); color: var(--green-dark); }
+      .metric-grid { grid-template-columns: 1fr 1fr; }
+      .tips-grid { grid-template-columns: 1fr; }
+      main { padding: 1rem; }
+    }
+    @media (min-width: 601px) {
+      .mobile-tabs { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="#">
+    <div class="logo-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 6v6l4 2"/>
+      </svg>
+    </div>
+    CarbonLens
+  </a>
+  <div class="nav-tabs">
+    <button class="tab active" onclick="showTab('dashboard')">Dashboard</button>
+    <button class="tab" onclick="showTab('calculator')">Calculator</button>
+    <button class="tab" onclick="showTab('insights')">AI Insights</button>
+    <button class="tab" onclick="showTab('pledges')">Pledges</button>
+  </div>
+  <div class="score-badge" id="score-badge">Score: —</div>
+</nav>
+
+<!-- Mobile tabs -->
+<div class="mobile-tabs">
+  <button class="mobile-tab active" onclick="showTab('dashboard')">Dashboard</button>
+  <button class="mobile-tab" onclick="showTab('calculator')">Calculator</button>
+  <button class="mobile-tab" onclick="showTab('insights')">AI Insights</button>
+  <button class="mobile-tab" onclick="showTab('pledges')">Pledges</button>
+</div>
+
+<main>
+
+  <!-- DASHBOARD -->
+  <div class="section active" id="tab-dashboard">
+    <div class="hero">
+      <h2>🌱 Your Carbon Snapshot</h2>
+      <p>Track your footprint, get AI-powered tips, and reduce your impact — one action at a time. Head to the Calculator tab to get started.</p>
+    </div>
+    <div class="metric-grid">
+      <div class="metric">
+        <div class="metric-label">Monthly</div>
+        <div class="metric-value" id="d-monthly">—</div>
+        <div class="metric-unit">kg CO₂</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Annual</div>
+        <div class="metric-value" id="d-annual">—</div>
+        <div class="metric-unit">tonnes CO₂</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">vs India Avg</div>
+        <div class="metric-value" id="d-vs">—</div>
+        <div class="metric-unit">avg ~1.9t/yr</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Emissions Breakdown</div>
+      <div id="breakdown-bars">
+        <p style="font-size:13px;color:var(--text3);">Run the calculator to see your breakdown.</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">6-Month Trend</div>
+      <div style="position:relative;height:160px;">
+        <canvas id="trendChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- CALCULATOR -->
+  <div class="section" id="tab-calculator">
+    <div class="card">
+      <div class="card-title">🚗 Transport</div>
+      <div class="input-row">
+        <div class="input-label">Car travel <span class="input-sub">km/month</span></div>
+        <div class="slider-row">
+          <input type="range" min="0" max="3000" step="50" value="800" id="car" oninput="updateVal('car','carVal','km')">
+          <span class="slider-val" id="carVal">800 km</span>
+        </div>
+      </div>
+      <div class="input-row">
+        <div class="input-label">Flights <span class="input-sub">hours/month</span></div>
+        <div class="slider-row">
+          <input type="range" min="0" max="50" step="1" value="2" id="flight" oninput="updateVal('flight','flightVal','hrs')">
+          <span class="slider-val" id="flightVal">2 hrs</span>
+        </div>
+      </div>
+      <div class="input-row">
+        <div class="input-label">Public transport <span class="input-sub">km/month</span></div>
+        <div class="slider-row">
+          <input type="range" min="0" max="2000" step="50" value="200" id="public" oninput="updateVal('public','publicVal','km')">
+          <span class="slider-val" id="publicVal">200 km</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⚡ Home Energy</div>
+      <div class="input-row">
+        <div class="input-label">Electricity <span class="input-sub">kWh/month</span></div>
+        <div class="slider-row">
+          <input type="range" min="0" max="1000" step="10" value="300" id="elec" oninput="updateVal('elec','elecVal','kWh')">
+          <span class="slider-val" id="elecVal">300 kWh</span>
+        </div>
+      </div>
+      <div class="input-row">
+        <div class="input-label">LPG cylinders <span class="input-sub">per month</span></div>
+        <div class="slider-row">
+          <input type="range" min="0" max="10" step="0.5" value="2" id="lpg" oninput="updateVal('lpg','lpgVal','cyl')">
+          <span class="slider-val" id="lpgVal">2 cyl</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🥗 Diet & Lifestyle</div>
+      <div class="input-row">
+        <div class="input-label">Diet type</div>
+        <select id="diet">
+          <option value="1">🌱 Vegan</option>
+          <option value="1.5">🥦 Vegetarian</option>
+          <option value="2.2" selected>🍳 Mixed (occasional meat)</option>
+          <option value="3.3">🍗 Regular meat-eater</option>
+          <option value="4.5">🥩 Heavy meat-eater</option>
+        </select>
+      </div>
+      <div class="input-row" style="margin-top:0.8rem;">
+        <div class="input-label">Online orders <span class="input-sub">per month</span></div>
+        <div class="slider-row">
+          <input type="range" min="0" max="50" step="1" value="8" id="shop" oninput="updateVal('shop','shopVal','orders')">
+          <span class="slider-val" id="shopVal">8 orders</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="calc-btn" onclick="calculate()">Calculate My Footprint →</button>
+  </div>
+
+  <!-- AI INSIGHTS -->
+  <div class="section" id="tab-insights">
+    <div class="card">
+      <div class="card-title">✨ AI-Powered Analysis</div>
+      <div id="insight-container">
+        <p style="font-size:13px;color:var(--text3);">Calculate your footprint first, then click below to get personalized AI insights.</p>
+      </div>
+      <button class="ai-btn" id="ai-btn" onclick="getInsights()" style="display:none;">
+        ✦ Generate My Insights
+      </button>
+    </div>
+    <div class="card" id="tips-card" style="display:none;">
+      <div class="card-title">⚡ Quick Wins</div>
+      <div class="tips-grid">
+        <div class="tip-card">
+          <div class="tip-icon">☀️</div>
+          <div class="tip-title">Switch to Solar</div>
+          <div class="tip-desc">Rooftop solar can cut electricity emissions by up to 80% in Indian homes</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">🚲</div>
+          <div class="tip-title">Cycle Short Trips</div>
+          <div class="tip-desc">Replacing 5km car trips with cycling saves ~1.2 kg CO₂ per trip</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">🥦</div>
+          <div class="tip-title">Eat More Plants</div>
+          <div class="tip-desc">One meat-free day/week reduces diet footprint by ~14% annually</div>
+        </div>
+        <div class="tip-card">
+          <div class="tip-icon">💡</div>
+          <div class="tip-title">Optimize Devices</div>
+          <div class="tip-desc">LED bulbs and sleep modes save ~50 kWh/month on average</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLEDGES -->
+  <div class="section" id="tab-pledges">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+        <div class="card-title" style="margin-bottom:0;">My Commitments</div>
+        <span style="font-size:12px;color:var(--text3);font-family:'DM Mono',monospace;" id="pledge-count">0 / 6 pledged</span>
+      </div>
+      <div id="pledge-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🌍 Your Impact</div>
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px;">
+        <span style="font-size:32px;font-weight:600;color:var(--green);font-family:'DM Mono',monospace;" id="pledge-saving">0</span>
+        <span style="font-size:13px;color:var(--text2);">kg CO₂ saved per month</span>
+      </div>
+      <p style="font-size:13px;color:var(--text2);">Equivalent to planting <strong style="color:var(--green);" id="trees-eq">0</strong> trees 🌳</p>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  Built with ❤️ for a greener planet &nbsp;·&nbsp; <a href="https://github.com" target="_blank">View on GitHub</a> &nbsp;·&nbsp; Powered by Ashutosh
+</footer>
+
+<script>
+  // ─── State ───────────────────────────────────────────────
+  let userData = null;
+  let trendChartInstance = null;
+  const pledgeChecked = {};
+
+  const pledges = [
+    { id: 'p1', text: 'Walk or cycle for all trips under 3 km', impact: 18 },
+    { id: 'p2', text: 'Go meat-free at least 2 days per week', impact: 22 },
+    { id: 'p3', text: 'Use public transport for daily commute', impact: 35 },
+    { id: 'p4', text: 'Switch to LED bulbs throughout the home', impact: 12 },
+    { id: 'p5', text: 'Skip one long-haul flight this year', impact: 40 },
+    { id: 'p6', text: 'Buy local produce for at least half my meals', impact: 15 },
+  ];
+
+  // ─── Tab switching ────────────────────────────────────────
+  function showTab(name) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab, .mobile-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    document.querySelectorAll('.tab, .mobile-tab').forEach(t => {
+      if (t.textContent.toLowerCase().includes(name.substring(0, 4))) t.classList.add('active');
+    });
+  }
+
+  // ─── Slider labels ─────────────────────────────────────────
+  function updateVal(id, outId, unit) {
+    const val = document.getElementById(id).value;
+    document.getElementById(outId).textContent = val + ' ' + unit;
+  }
+
+  // ─── Calculate ─────────────────────────────────────────────
+  function calculate() {
+    const car    = parseFloat(document.getElementById('car').value);
+    const flight = parseFloat(document.getElementById('flight').value);
+    const pub    = parseFloat(document.getElementById('public').value);
+    const elec   = parseFloat(document.getElementById('elec').value);
+    const lpg    = parseFloat(document.getElementById('lpg').value);
+    const diet   = parseFloat(document.getElementById('diet').value);
+    const shop   = parseFloat(document.getElementById('shop').value);
+
+    const carKg    = Math.round(car * 0.21);
+    const flightKg = Math.round(flight * 90);
+    const pubKg    = Math.round(pub * 0.04);
+    const elecKg   = Math.round(elec * 0.82);
+    const lpgKg    = Math.round(lpg * 14.9);
+    const dietKg   = Math.round(diet * 100);
+    const shopKg   = Math.round(shop * 4.5);
+
+    const total  = carKg + flightKg + pubKg + elecKg + lpgKg + dietKg + shopKg;
+    const annual = Math.round(total * 12);
+    const indiaAvgMonthly = 1900 / 12;
+    const vsAvg  = Math.round(((total - indiaAvgMonthly) / indiaAvgMonthly) * 100);
+
+    userData = { total, annual, vsAvg, carKg, flightKg, pubKg, elecKg, lpgKg, dietKg, shopKg };
+
+    // Metrics
+    document.getElementById('d-monthly').textContent = total;
+    document.getElementById('d-annual').textContent  = (annual / 1000).toFixed(1) + 't';
+    const vsEl = document.getElementById('d-vs');
+    vsEl.textContent = (vsAvg > 0 ? '+' : '') + vsAvg + '%';
+    vsEl.style.color = vsAvg > 0 ? 'var(--red)' : 'var(--green)';
+
+    // Score
+    const score = Math.max(0, Math.min(100, Math.round(100 - (total / 500) * 100)));
+    document.getElementById('score-badge').textContent = 'Score: ' + score;
+
+    // Breakdown bars
+    const cats = [
+      { label: 'Transport',    val: carKg + flightKg + pubKg, color: 'var(--blue)' },
+      { label: 'Home Energy',  val: elecKg + lpgKg,           color: 'var(--amber)' },
+      { label: 'Diet',         val: dietKg,                   color: 'var(--green)' },
+      { label: 'Shopping',     val: shopKg,                   color: 'var(--purple)' },
+    ];
+    document.getElementById('breakdown-bars').innerHTML = cats.map(c => `
+      <div class="result-bar">
+        <div class="result-bar-label"><span>${c.label}</span><span>${c.val} kg</span></div>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${Math.min(100, Math.round(c.val / total * 100))}%;background:${c.color};"></div>
+        </div>
+      </div>
+    `).join('');
+
+    // Trend chart
+    renderTrend(total);
+
+    // Unlock AI insights button
+    document.getElementById('ai-btn').style.display = 'inline-flex';
+    document.getElementById('tips-card').style.display = 'block';
+
+    showTab('dashboard');
+  }
+
+  // ─── Trend chart ───────────────────────────────────────────
+  function renderTrend(current) {
+    const history = [
+      Math.round(current * 1.18),
+      Math.round(current * 1.12),
+      Math.round(current * 1.07),
+      Math.round(current * 1.03),
+      Math.round(current * 1.01),
+      current,
+    ];
+    const ctx = document.getElementById('trendChart').getContext('2d');
+    if (trendChartInstance) trendChartInstance.destroy();
+    trendChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+          label: 'kg CO₂',
+          data: history,
+          borderColor: '#1D9E75',
+          backgroundColor: 'rgba(29,158,117,0.07)',
+          fill: true,
+          tension: 0.4,
+          pointBackgroundColor: '#1D9E75',
+          pointRadius: 4,
+          pointHoverRadius: 6,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 11, family: 'DM Sans' } } },
+          y: { grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { size: 11, family: 'DM Mono' } } },
+        },
+      },
+    });
+  }
+
+  // ─── AI Insights ────────────────────────────────────────────
+  async function getInsights() {
+    if (!userData) return;
+    const btn = document.getElementById('ai-btn');
+    btn.innerHTML = '<span class="spinner"></span> Analyzing your footprint...';
+    btn.disabled = true;
+
+    const container = document.getElementById('insight-container');
+    container.innerHTML = '<div class="insight-box loading"><div class="insight-text muted">Claude is analyzing your data and generating personalized insights...</div></div>';
+
+    const prompt = `You are CarbonLens AI, a helpful carbon footprint advisor focused on India. A user has these monthly emissions:
+- Car travel: ${userData.carKg} kg CO₂
+- Flights: ${userData.flightKg} kg CO₂
+- Public transport: ${userData.pubKg} kg CO₂
+- Electricity: ${userData.elecKg} kg CO₂
+- LPG gas: ${userData.lpgKg} kg CO₂
+- Diet: ${userData.dietKg} kg CO₂
+- Shopping: ${userData.shopKg} kg CO₂
+- Total: ${userData.total} kg CO₂/month (${(userData.annual / 1000).toFixed(1)} tonnes/year)
+- vs India average: ${userData.vsAvg > 0 ? '+' : ''}${userData.vsAvg}%
+
+Provide exactly 3 specific, actionable, personalized insights. Focus on the biggest sources. Keep each insight concise (2-3 sentences). Be encouraging and practical for an Indian user. Return ONLY a valid JSON array in this format with no other text or markdown:
+[{"title": "short title", "tip": "the detailed insight text"}]`;
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 1000,
+          messages: [{ role: 'user', content: prompt }],
+        }),
+      });
+
+      const data = await response.json();
+      const text = data.content.map(i => i.text || '').join('');
+      const clean = text.replace(/```json|```/g, '').trim();
+      const insights = JSON.parse(clean);
+
+      container.innerHTML = insights.map(ins => `
+        <div class="insight-box" style="margin-bottom:10px;">
+          <div class="insight-header">✦ ${ins.title}</div>
+          <div class="insight-text">${ins.tip}</div>
+        </div>
+      `).join('');
+
+    } catch (e) {
+      // Fallback insights
+      container.innerHTML = `
+        <div class="insight-box" style="margin-bottom:10px;">
+          <div class="insight-header">✦ Your Biggest Opportunity</div>
+          <div class="insight-text">Based on your data, transport and diet are your largest emission sources. Combining trips and carpooling even 2 days a week can meaningfully cut your monthly footprint.</div>
+        </div>
+        <div class="insight-box" style="margin-bottom:10px;">
+          <div class="insight-header">✦ Energy at Home</div>
+          <div class="insight-text">Setting your AC to 26°C instead of 22°C and using a 5-star rated appliances can reduce your electricity bill and carbon footprint significantly over a year.</div>
+        </div>
+        <div class="insight-box" style="margin-bottom:10px;">
+          <div class="insight-header">✦ Small Diet Shifts, Big Impact</div>
+          <div class="insight-text">Two plant-based days per week can reduce your diet-related footprint by up to 20%. Dal, sabzi, and paneer meals are already part of Indian cuisine — lean into them more!</div>
+        </div>
+      `;
+    }
+
+    btn.innerHTML = '↺ Refresh Insights';
+    btn.disabled = false;
+  }
+
+  // ─── Pledges ────────────────────────────────────────────────
+  function renderPledges() {
+    const list = document.getElementById('pledge-list');
+    list.innerHTML = pledges.map(p => `
+      <div class="pledge-item">
+        <div class="pledge-check ${pledgeChecked[p.id] ? 'checked' : ''}" onclick="togglePledge('${p.id}')">
+          ${pledgeChecked[p.id] ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+        </div>
+        <span class="pledge-text">${p.text}</span>
+        <span class="pledge-impact">-${p.impact} kg/mo</span>
+      </div>
+    `).join('');
+    updatePledgeTotals();
+  }
+
+  function togglePledge(id) {
+    pledgeChecked[id] = !pledgeChecked[id];
+    renderPledges();
+  }
+
+  function updatePledgeTotals() {
+    const checked = pledges.filter(p => pledgeChecked[p.id]);
+    const total   = checked.reduce((s, p) => s + p.impact, 0);
+    document.getElementById('pledge-count').textContent   = `${checked.length} / ${pledges.length} pledged`;
+    document.getElementById('pledge-saving').textContent  = total;
+    document.getElementById('trees-eq').textContent       = Math.round(total / 21);
+  }
+
+  // ─── Init ───────────────────────────────────────────────────
+  renderPledges();
+</script>
+</body>
+</html>
