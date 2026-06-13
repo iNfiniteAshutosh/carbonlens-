@@ -1,0 +1,30 @@
+{
+  "name": "carbonlens",
+  "version": "1.0.0",
+  "description": "AI-powered Carbon Footprint Awareness Platform",
+  "main": "index.html",
+  "scripts": {
+    "test": "jest --coverage",
+    "test:watch": "jest --watch"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coverageDirectory": "coverage",
+    "collectCoverageFrom": [
+      "*.js",
+      "!jest.config.js"
+    ]
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  },
+  "keywords": [
+    "carbon-footprint",
+    "sustainability",
+    "ai",
+    "climate",
+    "environment"
+  ],
+  "author": "Ashutosh Solanki",
+  "license": "MIT"
+}
